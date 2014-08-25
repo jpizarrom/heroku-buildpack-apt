@@ -69,3 +69,12 @@ export LD_LIBRARY_PATH="$BUILD_DIR/.apt/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PAT
 export INCLUDE_PATH="$BUILD_DIR/.apt/usr/include:$INCLUDE_PATH"
 export CPATH="$INCLUDE_PATH"
 export CPPPATH="$INCLUDE_PATH"
+
+echo "Path is set to"
+echo $PATH
+
+if [ -f compile.sh ]; then
+    echo 'compile.sh file found, executing...'
+    chmod 700 compile.sh
+    ./compile.sh
+fi
