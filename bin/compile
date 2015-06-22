@@ -8,9 +8,25 @@ set -e
 # set -x
 
 # parse and derive params
-BUILD_DIR=$1
-CACHE_DIR=$2
+BUILD_DIR=${1:-}
+CACHE_DIR=${2:-}
+ENV_DIR=${3:-}
 LP_DIR=`cd $(dirname $0); cd ..; pwd`
+
+export_env_dir() {
+  local env_dir=$1
+  if [ -d "$env_dir" ]; then
+    local whitelist_regex=${2:-''}
+    local blacklist_regex=${3:-'^(PATH|GIT_DIR|CPATH|CPPATH|LD_PRELOAD|LIBRARY_PATH)$'}
+    if [ -d "$env_dir" ]; then
+      for e in $(ls $env_dir); do
+        echo "$e" | grep -E "$whitelist_regex" | grep -qvE "$blacklist_regex" &&
+        export "$e=$(cat $env_dir/$e)"
+        :
+      done
+    fi
+  fi
+}
 
 function error() {
   echo " !     $*" >&2
@@ -28,6 +44,8 @@ function indent() {
     *)      sed -u "$c";;
   esac
 }
+
+export_env_dir "$ENV_DIR"
 
 APT_CACHE_DIR="$CACHE_DIR/apt/cache"
 APT_STATE_DIR="$CACHE_DIR/apt/state"
@@ -69,12 +87,6 @@ export LD_LIBRARY_PATH="$BUILD_DIR/.apt/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PAT
 export INCLUDE_PATH="$BUILD_DIR/.apt/usr/include:$INCLUDE_PATH"
 export CPATH="$INCLUDE_PATH"
 export CPPPATH="$INCLUDE_PATH"
-
-echo "Path is set to"
-echo $PATH
-
-echo "PORT is set to"
-echo $PORT
 
 cd $BUILD_DIR
 
